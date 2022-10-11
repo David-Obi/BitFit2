@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         val sleepRv = findViewById<RecyclerView>(R.id.sleepLogs)
         sleepLog = ArrayList()
-        sleepAdapter = SleepAdapter(sleepLog)
+        sleepAdapter = SleepAdapter(sleepLog, this@MainActivity)
         sleepRv.adapter = sleepAdapter
         lifecycleScope.launch {
             (application as BitfitApplication).db.sleepDao().getAll().collect { databaseList ->
@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
                 (application as BitfitApplication).db.sleepDao().deleteAll()
             }
         }
+
+
 //        var sleepItem : SleepItem
 //
 //        var sleepActivityResultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
@@ -79,6 +81,21 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, SleepActivity::class.java)
             startActivity(intent)
             //sleepActivityResultLauncher.launch(intent)
+        }
+    }
+
+    fun delete(sleepItem : SleepItem) {
+        lifecycleScope.launch(IO) {
+//            (application as BitfitApplication).db.sleepDao().getAll().collect { databaseList ->
+//                databaseList[position].d
+//            }
+            (application as BitfitApplication).db.sleepDao().delete(
+                SleepEntity(
+                    hours = sleepItem.hours,
+                    date = sleepItem.date,
+                    notes = sleepItem.notes
+                )
+            )
         }
     }
 

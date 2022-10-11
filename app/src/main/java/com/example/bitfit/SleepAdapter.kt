@@ -12,7 +12,8 @@ const val SLEEP_EXTRA = "SLEEP_EXTRA"
 
 lateinit var application: Application
 
-class SleepAdapter(private val sleepLog : ArrayList<SleepItem>) : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
+class SleepAdapter(private val sleepLog : ArrayList<SleepItem>, private val activity: MainActivity)
+    : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
     {
         private val hoursTextView = itemView.findViewById<TextView>(R.id.hours)
@@ -44,13 +45,7 @@ class SleepAdapter(private val sleepLog : ArrayList<SleepItem>) : RecyclerView.A
         sleepLog.removeAt(position)
         notifyItemRemoved(position)
         notifyItemRangeChanged(position, sleepLog.size)
-//        (application as BitfitApplication).db.sleepDao().delete(
-//            SleepEntity(
-//                hours = sleepItem.hours,
-//                date = sleepItem.date,
-//                notes = sleepItem.notes
-//            )
-//        )
+        activity.delete(sleepItem)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -63,5 +58,5 @@ class SleepAdapter(private val sleepLog : ArrayList<SleepItem>) : RecyclerView.A
         holder.bind(log)
     }
 
-    override fun getItemCount() = sleepLog.size;
+    override fun getItemCount() = sleepLog.size
 }
