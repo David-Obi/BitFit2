@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 const val SLEEP_EXTRA = "SLEEP_EXTRA"
 
-lateinit var application: Application
-
 class SleepAdapter(private val sleepLog : ArrayList<SleepItem>, private val activity: MainActivity)
     : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
@@ -45,7 +43,7 @@ class SleepAdapter(private val sleepLog : ArrayList<SleepItem>, private val acti
         sleepLog.removeAt(position)
         notifyItemRemoved(position)
         notifyItemRangeChanged(position, sleepLog.size)
-        activity.delete(sleepItem)
+        //activity.delete(sleepItem)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

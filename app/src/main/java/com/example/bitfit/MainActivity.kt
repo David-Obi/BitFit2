@@ -1,87 +1,59 @@
 package com.example.bitfit
 
-import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-
-    lateinit var sleepLog : ArrayList<SleepItem>
-    lateinit var sleepAdapter: SleepAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val sleepRv = findViewById<RecyclerView>(R.id.sleepLogs)
-        sleepLog = ArrayList()
-        sleepAdapter = SleepAdapter(sleepLog, this@MainActivity)
-        sleepRv.adapter = sleepAdapter
-        lifecycleScope.launch {
-            (application as BitfitApplication).db.sleepDao().getAll().collect { databaseList ->
-                databaseList.map { entity ->
-                    SleepItem(
-                        entity.hours,
-                        entity.date,
-                        entity.notes
-                    )
-                }.also { mappedList ->
-                    sleepLog.clear()
-                    sleepLog.addAll(mappedList)
-                    sleepAdapter.notifyDataSetChanged()
-                }
+        // define fragments
+        val logFragment : Fragment = LogFragment()
+        val dashboardFragment : Fragment = DashboardFragment()
+
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+
+
+        // handle navigation selection
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            lateinit var fragment: Fragment
+            when (item.itemId) {
+                R.id.nav_log -> fragment = logFragment
+                R.id.nav_dashboard -> fragment = dashboardFragment
             }
+            replaceFragment(fragment)
+            true
         }
-        sleepRv.layoutManager = LinearLayoutManager(this).also {
-            val dividerItemDecoration = DividerItemDecoration(this, it.orientation)
-            sleepRv.addItemDecoration(dividerItemDecoration)
-        }
-        
+
+        // Set default selection
+        bottomNavigationView.selectedItemId = R.id.nav_log
+
         findViewById<Button>(R.id.deleteAll).setOnClickListener {
             lifecycleScope.launch(IO) {
                 (application as BitfitApplication).db.sleepDao().deleteAll()
             }
         }
 
-
-//        var sleepItem : SleepItem
-//
-//        var sleepActivityResultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
-//            ActivityResultContracts.StartActivityForResult()
-//        ) { result ->
-//            // If the user comes back to this activity from EditActivity
-//            // with no error or cancellation
-//            if (result.resultCode == Activity.RESULT_OK) {
-//                val data = result.data
-//                // Get the data passed from EditActivity
-//                if (data != null) {
-//                    sleepItem = data.extras!!.get(SLEEP_EXTRA) as SleepItem
-//                    //sleepLog.add(sleepItem)
-//                    //sleepAdapter.notifyItemInserted(sleepLog.size - 1)
-//                    lifecycleScope.launch(IO) {
-//                        (application as BitfitApplication).db.sleepDao().insert(sleepItem)
-//                    }
-//
-//                }
-//            }
-//        }
         findViewById<Button>(R.id.record).setOnClickListener {
             val intent = Intent(this, SleepActivity::class.java)
             startActivity(intent)
-            //sleepActivityResultLauncher.launch(intent)
         }
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.basic_frame_layout, fragment)
+        fragmentTransaction.commit()
     }
 
     fun delete(sleepItem : SleepItem) {
